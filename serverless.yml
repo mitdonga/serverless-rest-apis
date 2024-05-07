@@ -1,0 +1,66 @@
+service: serverless-todo-app
+frameworkVersion: '3'
+configValidationMode: error
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-south-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: 
+        - "arn:aws:dynamodb:ap-south-1:948103449602:table/TodoTable"
+
+functions:
+  todo_dashboard:
+    handler: src/index.dashboard
+    events:
+      - httpApi:
+          path: /
+          method: GET
+
+  todo_index:
+    handler: src/index.index
+    events:
+      - httpApi:
+          path: /todos
+          method: GET
+
+  todo_create:
+    handler: src/create.handler
+    events:
+      - httpApi:
+          path: /todos
+          method: POST
+
+  todo_update:
+    handler: src/update.handler
+    events:
+      - httpApi:
+          path: /todos/{todoId}
+          method: PUT
+
+  todo_get:
+    handler: src/get.handler
+    events:
+      - httpApi:
+          path: /todos/{todoId}
+          method: GET
+
+resources:
+  Resources:
+    TodoTable:  
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TodoTable
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
